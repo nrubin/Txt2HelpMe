@@ -18,7 +18,7 @@ import smtplib
 
 server = "smtp.gmail.com:587"
 sender = "rubin.m.noam@gmail.com"
-password = "Gnb4jvyeamaq4"
+
 receiver = ["noam@outlook.com"]
 
 subject = "hello"
