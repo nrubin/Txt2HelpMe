@@ -51,7 +51,7 @@ def home():
 		user = collection.find_one({"olin_id" : olin_id})
 	except:
 		registered = False
-		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id)
+		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=number,name=name)
 	print "I can query!"
 	print olin_id
 	print user
@@ -104,18 +104,18 @@ def apply_changes():
 		return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=False,change_fail=True,id=olin_id,number=number,name=name)
 
 def user_exists(olin_id):
-	user = collection.find_one({"olin_id" : olin_id})
-	if user:
-		return True
-	else:
+	try:
+		collection.find_one({"olin_id" : olin_id})
+	except:
 		return False
+	return True
 
 def number_exists(number):
-	user = collection.find_one({"number" : number})
-	if user:
-		return True
-	else:
+	try:
+		collection.find_one({"number" : number})
+	except:
 		return False
+	return True
 
 def validate_number(raw_number):
 	"""
