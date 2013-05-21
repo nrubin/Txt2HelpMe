@@ -15,11 +15,13 @@ def home():
 @app.route("/text",methods=["GET","POST"])
 def text():
 	sender_number = request.values.get('From',None)
+	print "message received from %s" % sender_number
 	sender_name = callers.get(sender_number,'anonymous')
 	sent_message = request.values.get('Body',None)
+
 	if sent_message:
 		send_email(sender_name, sent_message)
-	print request.values.get('Body','ooh fuck')
+
 	if sender_number in callers:
 		message = "hello %s" % callers[sender_number]
 	else:
