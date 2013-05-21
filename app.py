@@ -29,6 +29,7 @@ except Exception, e:
 
 
 db = client['txt2helpme']
+db.authenticate("app","root")
 collection = db.txt2helpme
 
 if os.environ.get('PORT',None):
