@@ -22,6 +22,7 @@ app.config.from_object(__name__)
 
 try:
     app.config['mongodb_uri'] = os.environ['MONGOLAB_URI']
+    print "the mongodb uri is %s" % app.config['mongodb_uri']
     client = MongoClient(app.config['mongodb_uri'],27318)
 except Exception, e:
     app.config['mongodb_uri'] = 'mongodb://localhost/txt2helpme' #set db uri
@@ -29,8 +30,10 @@ except Exception, e:
 
 
 db = client['txt2helpme']
-db.authenticate("app","root")
+print "client thingy worked"
+# db.authenticate("app","root")
 collection = db.txt2helpme
+print "collection thingy worked"
 
 if os.environ.get('PORT',None):
 	oa = OlinAuth(app,'txt2helpme.herokuapp.com')
