@@ -51,7 +51,7 @@ def home():
 		user = collection.find_one({"olin_id" : olin_id})
 	except:
 		registered = False
-		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=number,name=name)
+		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id)
 	print "I can query!"
 	print olin_id
 	print user
