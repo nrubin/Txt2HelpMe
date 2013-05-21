@@ -36,8 +36,12 @@ else:
 	oa = OlinAuth(app,'localhost:5000')
 	oa.init_app(app,'localhost:5000')
 
-
-db.authenticate("app","root")
+try:
+	db.authenticate("app","root")
+except:
+	db.logout()
+	db.authenticate("app","root")
+	
 collection = db.txt2helpme
 
 
