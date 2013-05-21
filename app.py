@@ -31,7 +31,7 @@ except Exception, e:
 
 db = client['txt2helpme']
 print "client thingy worked"
-db.authenticate("app","root")
+# db.authenticate("app","root")
 collection = db.txt2helpme
 print "collection thingy worked"
 
