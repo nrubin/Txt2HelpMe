@@ -20,28 +20,26 @@ SECRET_KEY = "secret secret"
 
 app.config.from_object(__name__)
 
-try:
-    app.config['mongodb_uri'] = os.environ['MONGOLAB_URI']
-    print "the mongodb uri is %s" % app.config['mongodb_uri']
-    # client = MongoClient(app.config['mongodb_uri'],27318)
-    client = MongoClient("mongodb://app:root@ds027318.mongolab.com:27318/heroku_app15804168")
-except Exception, e:
-    app.config['mongodb_uri'] = 'mongodb://localhost/txt2helpme' #set db uri
-    client = MongoClient(app.config['mongodb_uri'],27017)
-
-
-db = client['txt2helpme']
-print "client thingy worked"
-# db.authenticate("app","root")
-collection = db.txt2helpme
-print "collection thingy worked"
-
-if os.environ.get('PORT',None):
+if os.environ.get('MONGOLAB_URI',None):
+	#we are in heroku, act accordingly
+	app.config['mongodb_uri'] = os.environ['MONGOLAB_URI']
+	print "the mongodb uri is %s" % app.config['mongodb_uri']
+	client = MongoClient(app.config['mongodb_uri'])
+	db = client['heroku_app15804168']
 	oa = OlinAuth(app,'txt2helpme.herokuapp.com')
 	oa.init_app(app,'txt2helpme.herokuapp.com')
 else:
+#we are local, debug mode.
+	app.config['mongodb_uri'] = 'mongodb://localhost/txt2helpme' #set db uri
+	client = MongoClient(app.config['mongodb_uri'])
+	db = client['txt2helpme']
 	oa = OlinAuth(app,'localhost:5000')
 	oa.init_app(app,'localhost:5000')
+
+
+db.authenticate("app","root")
+collection = db.txt2helpme
+
 
 @app.route("/",methods=["GET"])
 @auth_required
