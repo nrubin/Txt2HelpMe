@@ -22,10 +22,12 @@ app.config.from_object(__name__)
 
 try:
     app.config['mongodb_uri'] = os.environ['MONGOLAB_URI']
+    client = MongoClient(app.config['mongodb_uri'],27318)
 except Exception, e:
     app.config['mongodb_uri'] = 'mongodb://localhost/txt2helpme' #set db uri
+    client = MongoClient(app.config['mongodb_uri'],27017)
 
-client = MongoClient(app.config['mongodb_uri'],27017)
+
 db = client['txt2helpme']
 collection = db.txt2helpme
 
