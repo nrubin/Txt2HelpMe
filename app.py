@@ -23,7 +23,8 @@ app.config.from_object(__name__)
 try:
     app.config['mongodb_uri'] = os.environ['MONGOLAB_URI']
     print "the mongodb uri is %s" % app.config['mongodb_uri']
-    client = MongoClient(app.config['mongodb_uri'],27318)
+    # client = MongoClient(app.config['mongodb_uri'],27318)
+    client = MongoClient("mongodb://app:root@ds027318.mongolab.com:27318/heroku_app15804168")
 except Exception, e:
     app.config['mongodb_uri'] = 'mongodb://localhost/txt2helpme' #set db uri
     client = MongoClient(app.config['mongodb_uri'],27017)
