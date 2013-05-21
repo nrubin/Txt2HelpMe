@@ -30,8 +30,8 @@ db = client['txt2helpme']
 collection = db.txt2helpme
 
 if os.environ.get('PORT',None):
-	oa = OlinAuth(app,'txt2helpme')
-	oa.init_app(app,'0.0.0.0:' + os.environ.get('PORT','5000'))
+	oa = OlinAuth(app,'txt2helpme.herokuapp.com')
+	oa.init_app(app,'txt2helpme.herokuapp.com')
 else:
 	oa = OlinAuth(app,'localhost:5000')
 	oa.init_app(app,'localhost:5000')
