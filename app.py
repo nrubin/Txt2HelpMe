@@ -42,13 +42,13 @@ else:
 	oa = OlinAuth(app,'localhost:5000')
 	oa.init_app(app,'localhost:5000')
 
-callers = {"+13104299195": "Noam"}
-
 @app.route("/",methods=["GET"])
 @auth_required
 def home():
 	olin_id = current_user["id"]
+	print "I got the current user"
 	user = collection.find_one({"olin_id" : olin_id})
+	print "I can query!"
 	print olin_id
 	print user
 	number = None
