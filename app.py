@@ -29,9 +29,12 @@ client = MongoClient(app.config['mongodb_uri'],27017)
 db = client['txt2helpme']
 collection = db.txt2helpme
 
-
-oa = OlinAuth(app,'localhost:5000')
-oa.init_app(app,'localhost:5000')
+if os.environ.get('PORT',None):
+	oa = OlinAuth(app,'txt2helpme')
+	oa.init_app(app,'0.0.0.0:' + os.environ.get('PORT','5000'))
+else:
+	oa = OlinAuth(app,'localhost:5000')
+	oa.init_app(app,'localhost:5000')
 
 callers = {"+13104299195": "Noam"}
 
