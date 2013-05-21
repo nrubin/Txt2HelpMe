@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<script type="text/javascript">
+var alert = $(".alert");
+if (alert) {
+
+	window.setTimeout(function() {
+    $(".alert").fadeTo(500, 0).slideUp(500, function(){
+        $(this).remove(); 
+    });
+}, 3000);
+};
+</script>
+<div class="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+<div class="hero-unit">
+        <h1>Stranded at Eliot? Text 195HELP2ME6.</h1>
+        <br />
+        <p>Welcome to Txt2HelpMe, the app that helps you send texts to HelpMe when you're in a bind.</p>
+        <p> You are currently logged in as <span style="color:limegreen">{{ id }}</span> </p>
+         {% if change_success %}
+        <div class="alert alert-success" id="changes-saved">
+        	<p>Your changes have been saved.</p>	
+        </div>
+        {% endif %}
+
+        {% if change_fail %}
+        <div class="alert alert-error" id="changes-failed">
+        	<p>Something went wrong! Perhaps someone is already using that number or that name.</p>	
+        </div>
+        {% endif %}
+                {% if register_success %}
+        <div class="alert alert-success" id="register-success">
+        	<p>You have successfully registered.</p>	
+        </div>
+        {% endif %}
+        {% if register_fail %}
+        <div class="alert alert-error" id="register-failed">
+        	<p>Something went wrong! Perhaps someone is already using that number or that name.</p>	
+        </div>
+        {% endif %}
+    {% if registered %}
+    <div class="registered">
+        <h2>You're all signed up.</h2>
+        <p> If you need to change anything, edit the info below and hit "apply".	</p>
+   <form action="/apply" method="POST">
+         <label for="number"> Phone Number: </label> <input type="text" name="number" value="{{number}}"/>
+        <label for="name"> Display Name: </label> <input type="text" name="name" value="{{name}}"/>
+        <p><button type="submit" class="btn btn-primary btn-large">Apply</button></p>
+    </form>
+
+    </div>
+
+    {% else %}
+    <div class="not-registered">
+        <h2>Seems like you haven't signed up yet.</h2> 
+        <p> Please enter the following info, and then we can begin!</p>
+         <form action="/register" method="POST">
+        <label for="number"> Phone Number: </label> <input type="text" name="number" placeholder="617 555 0123"/>
+        <label for="name"> Display Name: </label> <input type="text" name="name" placeholder="Prez Miller"/>
+        <p><button type="submit" class="btn btn-primary btn-large">Sign up &raquo;</button></p>
+    </form>
+
+    </div>
+{% endif %}
+   </div>
+
+</div>
+{% endblock %}
