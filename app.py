@@ -41,7 +41,7 @@ try:
 except:
 	db.logout()
 	db.authenticate("app","root")
-	
+
 collection = db.txt2helpme
 
 
@@ -68,43 +68,79 @@ def home():
 		registered = False
 	return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=number,name=name)
 
-@app.route("/register",methods=["POST"])
+@app.route("/register",methods=["GET","POST"])
 @auth_required
 def register():
-	raw_number = request.values.get('number',None)
-	display_name = request.values.get('name',None)
-	validated_number = validate_number(raw_number)
 	olin_id = current_user["id"]
-	if validated_number and not number_exists(validated_number) and not user_exists(olin_id):
-		new_user = {}
-		new_user["number"] = validated_number
-		new_user["name"] = display_name
-		new_user["olin_id"] = olin_id
-		collection.insert(new_user)
-		return render_template("index.html",registered=True,register_success=True,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=validated_number,name=display_name)
+	if request.method == 'GET':
+		try:
+			user = collection.find_one({"olin_id" : olin_id})
+		except:
+			registered = False
+			return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id)
+		number = None
+		name = None
+		if user:
+			registered = True
+			number = user["number"]
+			name = user["name"]
+		else:
+			registered = False
+		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=number,name=name)
 	else:
-		return render_template("index.html",registered=False,register_success=False,register_fail=True,change_success=False,change_fail=False,id=olin_id)
+		raw_number = request.values.get('number',None)
+		display_name = request.values.get('name',None)
+		validated_number = validate_number(raw_number)
+		print ">>>> the validated number is %s" % validated_number
+		print ">>>> does the number exist? %s" % number_exists(validated_number)
+		print ">>>> does the user exist? %s" % user_exists(olin_id)
+		if validated_number and not number_exists(validated_number) and not user_exists(olin_id):
+			new_user = {}
+			new_user["number"] = validated_number
+			new_user["name"] = display_name
+			new_user["olin_id"] = olin_id
+			collection.insert(new_user)
+			return render_template("index.html",registered=True,register_success=True,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=validated_number,name=display_name)
+		else:
+			return render_template("index.html",registered=False,register_success=False,register_fail=True,change_success=False,change_fail=False,id=olin_id)
 
-@app.route("/apply",methods=["POST"])
+@app.route("/apply",methods=["GET","POST"])
 @auth_required
 def apply_changes():
-	raw_number = request.values.get('number',None)
-	display_name = request.values.get('name',None)
-	validated_number = validate_number(raw_number)
 	olin_id = current_user["id"]
-	if validated_number:
-		new_user = {}
-		new_user["number"] = validated_number
-		new_user["name"] = display_name
-		new_user["olin_id"] = olin_id
-		collection.update({"olin_id" : olin_id},new_user,upsert=True)
-		print "the new user is %s" % (new_user)
-		return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=True,change_fail=False,id=olin_id,number=validated_number,name=display_name)
+	if request.method == 'GET':
+		try:
+			user = collection.find_one({"olin_id" : olin_id})
+		except:
+			registered = False
+			return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id)
+		number = None
+		name = None
+		if user:
+			registered = True
+			number = user["number"]
+			name = user["name"]
+		else:
+			registered = False
+		return render_template("index.html",registered=registered,register_success=False,register_fail=False,change_success=False,change_fail=False,id=olin_id,number=number,name=name)
 	else:
-		user = collection.find_one({"olin_id" : olin_id})
-		number = user["number"]
-		name = user["name"]
-		return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=False,change_fail=True,id=olin_id,number=number,name=name)
+		raw_number = request.values.get('number',None)
+		display_name = request.values.get('name',None)
+		validated_number = validate_number(raw_number)
+		olin_id = current_user["id"]
+		if validated_number:
+			new_user = {}
+			new_user["number"] = validated_number
+			new_user["name"] = display_name
+			new_user["olin_id"] = olin_id
+			collection.update({"olin_id" : olin_id},new_user,upsert=True)
+			print "the new user is %s" % (new_user)
+			return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=True,change_fail=False,id=olin_id,number=validated_number,name=display_name)
+		else:
+			user = collection.find_one({"olin_id" : olin_id})
+			number = user["number"]
+			name = user["name"]
+			return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=False,change_fail=True,id=olin_id,number=number,name=name)
 
 def user_exists(olin_id):
 	try:
@@ -134,36 +170,19 @@ def validate_number(raw_number):
 	except:
 		return None
 
-# @app.route("/login",methods=["GET","POST"])
-# @auth_required
-# def login():
-# 	olin_username = current_user["id"]
-# 	user = collection.find_one({"olin_username":olin_username})
-# 	if user:
-# 		return "you have logged in"
-# 	else:
-# 		return redirect(url_for("register"))
-
-
-
-
 
 @app.route("/text",methods=["GET","POST"])
 def text():
 	sender_number = request.values.get('From',None)
-	print "message received from %s" % sender_number
-	sender = collection.find_one({"number":sender_number})
-	sender_name = sender["name"]
 	sent_message = request.values.get('Body',None)
-
-	if sent_message:
+	print "message received from %s" % sender_number
+	try:
+		sender = collection.find_one({"number":sender_number})
+		sender_name = sender["name"]
 		send_email(sender_name, sent_message)
-
-	if sender_number in callers:
 		message = "Alright %s, your message has been sent. Help is on the way!" % sender_name
-	else:
+	except:
 		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
-
 	resp = twilio.twiml.Response()
 	resp.sms(message)
 	return str(resp)
