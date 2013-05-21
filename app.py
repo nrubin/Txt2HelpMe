@@ -13,17 +13,48 @@ def home():
 	return "hello, there is nothing here."
 
 @app.route("/text",methods=["GET","POST"])
-def hello_monkey():
-	from_number = request.values.get('From',None)
+def text():
+	sender_number = request.values.get('From',None)
+	sender_name = callers.get(sender_number,'anonymous')
+	sent_message = request.values.get('Body',None)
+	if sent_message:
+		send_email(sender_name, sent_message)
 	print request.values.get('Body','ooh fuck')
-	if from_number in callers:
-		message = "hello %s" % callers[from_number]
+	if sender_number in callers:
+		message = "hello %s" % callers[sender_number]
 	else:
 		message = "I don't know who you are"
 
 	resp = twilio.twiml.Response()
 	resp.sms(message)
 	return str(resp)
+
+def send_email(name,message):
+	import smtplib
+
+	# from email.mime.text import MIMEtext
+
+	server = "smtp.gmail.com:587"
+	sender = "txt2helpme@gmail.com"
+	password = "olinhasnotrees"
+	receiver = ["noam@outlook.com"]
+
+	subject = "%s Needs Help!" % name
+
+	email = """From: %s\r\nTo: %s\r\nSubject: %s\r\n\
+
+	%s
+	""" % (sender, ", ".join(receiver), subject, message)
+
+	server = smtplib.SMTP(server)
+	server.starttls()
+	server.login("txt2helpme",password)
+	server.sendmail(sender,receiver,email)
+	server.quit()
+	# server.sendmail(sender,receiver,message)
+	# server.quit()
+
+
 
 if __name__ == '__main__':
     try:
