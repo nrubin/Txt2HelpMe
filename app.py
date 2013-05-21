@@ -144,17 +144,21 @@ def apply_changes():
 
 def user_exists(olin_id):
 	try:
-		collection.find_one({"olin_id" : olin_id})
+		user = collection.find_one({"olin_id" : olin_id})
+		if user:
+			return True
+		return False
 	except:
 		return False
-	return True
 
 def number_exists(number):
 	try:
-		collection.find_one({"number" : number})
+		user = collection.find_one({"number" : number})
+		if user:
+			return True
+		return False
 	except:
 		return False
-	return True
 
 def validate_number(raw_number):
 	"""
