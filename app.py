@@ -198,7 +198,7 @@ def send_email(name,number,message_text):
 	server = "smtp.gmail.com:587"
 	sender = "txt2helpme@gmail.com"
 	password = "olinhasnotrees"
-	receiver = "noam@outlook.com"
+	receiver = "helpme@lists.olin.edu"
 
 	subject = "%s Needs Help!" % name
 
