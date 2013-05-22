@@ -239,8 +239,7 @@ def send_email(name,number,message_text):
 	server.sendmail(sender,receiver,message.as_string())
 	server.sendmail(sender,sender,message.as_string())
 	server.quit()
-	# server.sendmail(sender,receiver,message)
-	# server.quit()
+
 
 
 
