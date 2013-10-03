@@ -1,13 +1,13 @@
-#the actual app
-
-from flask import Flask, request, redirect, url_for,render_template
+# -*- coding: UTF-8 -*-
+from flask import Flask, request, redirect, url_for,render_template, jsonify
 from flask.ext.olinauth import OlinAuth, auth_required,current_user
 import twilio.twiml
 import os
 from pymongo import MongoClient
 
 import phonenumbers
-
+import requests
+import json
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -104,6 +104,11 @@ def register():
 		else:
 			return render_template("index.html",registered=False,register_success=False,register_fail=True,change_success=False,change_fail=False,id=olin_id)
 
+# @app.route("/dining",methods=["GET"])
+# def dining():
+# 	d = get_meals()
+# 	return str(d)
+
 @app.route("/apply",methods=["GET","POST"])
 @auth_required
 def apply_changes():
@@ -142,6 +147,39 @@ def apply_changes():
 			name = user["name"]
 			return render_template("index.html",registered=True,register_success=False,register_fail=False,change_success=False,change_fail=True,id=olin_id,number=number,name=name)
 
+@app.route("/text",methods=["GET","POST"])
+def text():
+	sender_number = request.values.get('From',None)
+	sent_message = request.values.get('Body',None)
+	print "message received from %s" % sender_number
+	try:
+		sender = collection.find_one({"number":sender_number})
+		sender_name = sender["name"]
+		send_email(sender_name, sender_number,sent_message)
+		message = "Alright %s, your message has been sent. Your phone number, %s, was included in the email. Help is on the way!" % (sender_name,sender_number)
+	except:
+		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
+	resp = twilio.twiml.Response()
+	resp.sms(message)
+	return str(resp)
+
+@app.route("/meals",methods = ["POST"])
+def meals():
+	sender_number = request.values.get('From',None)
+	sent_message = request.values.get('Body',None)
+	print "message received from %s" % sender_number
+	try:
+		sender = collection.find_one({"number":sender_number})
+		sender_name = sender["name"]
+		meal_dict = parse_meal_request(sent_message)
+
+		message = "Alright %s, your message has been sent. Your phone number, %s, was included in the email. Help is on the way!" % (sender_name,sender_number)
+	except:
+		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
+	resp = twilio.twiml.Response()
+	resp.sms(message)
+	return str(resp)
+
 def user_exists(olin_id):
 	try:
 		user = collection.find_one({"olin_id" : olin_id})
@@ -173,23 +211,6 @@ def validate_number(raw_number):
 			return None
 	except:
 		return None
-
-
-@app.route("/text",methods=["GET","POST"])
-def text():
-	sender_number = request.values.get('From',None)
-	sent_message = request.values.get('Body',None)
-	print "message received from %s" % sender_number
-	try:
-		sender = collection.find_one({"number":sender_number})
-		sender_name = sender["name"]
-		send_email(sender_name, sender_number,sent_message)
-		message = "Alright %s, your message has been sent. Your phone number, %s, was included in the email. Help is on the way!" % (sender_name,sender_number)
-	except:
-		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
-	resp = twilio.twiml.Response()
-	resp.sms(message)
-	return str(resp)
 
 def send_email(name,number,message_text):
 
@@ -242,7 +263,74 @@ def send_email(name,number,message_text):
 	server.sendmail(sender,sender,message.as_string())
 	server.quit()
 
+def get_meals():
+	r = requests.get("http://olinapps-dining.herokuapp.com/api")	
+	data = json.loads(r.text)
+	return data
 
+# def get_specific_meal(days,meals):
+# 	index_mapping = {
+#   "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6
+#   }
+# 	day_requested = "monday" #default to Monday
+# 	meal_requested = "lunch"
+# 	for day in days.keys():
+# 		if days[day]:
+# 			day_requested = day
+# 	if day_requested == "sunday" or day_requested == "saturday":
+# 		if meals["dinner"]:
+# 			meal_requested = "dinner"
+# 		else:
+# 			meal_requested = "brunch"
+# 	else:
+# 		for meal in meals.keys():
+# 			if meals[meal]:
+# 				meal_requested = meal
+# 	index = index_mapping[day_requested]
+# 	food_day = 
+
+
+def parse_meal_request(text):
+  day_requested = "monday"
+  meal_requested = "lunch"
+  weekdays = ["monday", "tuesday" , "wednesday" , "thursday", "friday"]
+  meals = ["breakfast","lunch","dinner","brunch"]
+  indices = { "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6 }
+  weekend = False
+
+  lower_text = text.lower()
+  r = requests.get("http://olinapps-dining.herokuapp.com/api")  
+  raw_text = r.text
+  # raw_text.replace(u"Entrée",u"Entree")
+  raw_text.replace(u"Entr\xe9e",u"Entree")
+  meal_data = json.loads(raw_text)
+
+  #is it a weekday? -> what day -> what meal?
+  #is it the weekend? -> which day? -> brunch or dinner?
+  for day in weekdays:
+    if day in text:
+      day_requested = day
+  else:
+    weekend = True
+    if "saturday" in text:
+      day_requested = "saturday"
+    else:
+      day_requested = "sunday"
+  pri nt weekend
+  if weekend:
+    if "dinner" in text:
+      meal_requested = "dinner"
+    else:
+      meal_requested = "brunch"
+  else:
+    for meal in meals:
+      if meal in text:
+        meal_requested = meal
+  food = meal_data[indices[day_requested]]
+  if meal_requested == "brunch":
+    return food
+  else:
+    return food[meal_requested]
 
 
 if __name__ == '__main__':
