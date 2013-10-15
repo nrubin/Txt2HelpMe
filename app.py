@@ -171,9 +171,7 @@ def meals():
 	try:
 		sender = collection.find_one({"number":sender_number})
 		sender_name = sender["name"]
-		meal_dict = parse_meal_request(sent_message)
-
-		message = "Alright %s, your message has been sent. Your phone number, %s, was included in the email. Help is on the way!" % (sender_name,sender_number)
+		message = get_human_food(text)
 	except:
 		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
 	resp = twilio.twiml.Response()
@@ -268,27 +266,13 @@ def get_meals():
 	data = json.loads(r.text)
 	return data
 
-# def get_specific_meal(days,meals):
-# 	index_mapping = {
-#   "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6
-#   }
-# 	day_requested = "monday" #default to Monday
-# 	meal_requested = "lunch"
-# 	for day in days.keys():
-# 		if days[day]:
-# 			day_requested = day
-# 	if day_requested == "sunday" or day_requested == "saturday":
-# 		if meals["dinner"]:
-# 			meal_requested = "dinner"
-# 		else:
-# 			meal_requested = "brunch"
-# 	else:
-# 		for meal in meals.keys():
-# 			if meals[meal]:
-# 				meal_requested = meal
-# 	index = index_mapping[day_requested]
-# 	food_day = 
 
+def to_food_list(food):
+  items = []
+  for meal_type_list in food.values():
+    for meal_dict in meal_type_list:
+      items.append(meal_dict["name"])
+  return items
 
 def parse_meal_request(text):
   day_requested = "monday"
@@ -296,9 +280,10 @@ def parse_meal_request(text):
   weekdays = ["monday", "tuesday" , "wednesday" , "thursday", "friday"]
   meals = ["breakfast","lunch","dinner","brunch"]
   indices = { "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6 }
-  weekend = False
+  weekday = False
 
   lower_text = text.lower()
+  text = lower_text
   r = requests.get("http://olinapps-dining.herokuapp.com/api")  
   raw_text = r.text
   # raw_text.replace(u"Entrée",u"Entree")
@@ -309,15 +294,13 @@ def parse_meal_request(text):
   #is it the weekend? -> which day? -> brunch or dinner?
   for day in weekdays:
     if day in text:
+      weekday = True
       day_requested = day
-  else:
-    weekend = True
+  if not weekday:
     if "saturday" in text:
       day_requested = "saturday"
     else:
       day_requested = "sunday"
-  pri nt weekend
-  if weekend:
     if "dinner" in text:
       meal_requested = "dinner"
     else:
@@ -328,10 +311,21 @@ def parse_meal_request(text):
         meal_requested = meal
   food = meal_data[indices[day_requested]]
   if meal_requested == "brunch":
-    return food
+    if weekday:
+      return "there is no brunch on weekdays!"
+    brunch = to_food_list(food["breakfast"])
+    brunch.extend(to_food_list(food["lunch"]))
+    return brunch
   else:
-    return food[meal_requested]
+    return to_food_list(food[meal_requested])
 
+def humanize_food_list(food_list):
+  food_list = map(lambda x: str(x),food_list)
+  humanized = ", ".join(food_list)
+  return humanized
+
+def get_human_food(text):
+	return humanize_food_list(parse_meal_request(text))
 
 if __name__ == '__main__':
     try:

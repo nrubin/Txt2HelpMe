@@ -715,15 +715,23 @@ meals = """[
   }
 ]"""
 
+def to_food_list(food):
+  items = []
+  for meal_type_list in food.values():
+    for meal_dict in meal_type_list:
+      items.append(meal_dict["name"])
+  return items
+
 def parse_meal_request(text):
   day_requested = "monday"
   meal_requested = "lunch"
   weekdays = ["monday", "tuesday" , "wednesday" , "thursday", "friday"]
   meals = ["breakfast","lunch","dinner","brunch"]
   indices = { "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6 }
-  weekend = False
+  weekday = False
 
   lower_text = text.lower()
+  text = lower_text
   r = requests.get("http://olinapps-dining.herokuapp.com/api")  
   raw_text = r.text
   # raw_text.replace(u"Entrée",u"Entree")
@@ -734,15 +742,13 @@ def parse_meal_request(text):
   #is it the weekend? -> which day? -> brunch or dinner?
   for day in weekdays:
     if day in text:
+      weekday = True
       day_requested = day
-  else:
-    weekend = True
+  if not weekday:
     if "saturday" in text:
       day_requested = "saturday"
     else:
       day_requested = "sunday"
-  print weekend
-  if weekend:
     if "dinner" in text:
       meal_requested = "dinner"
     else:
@@ -753,9 +759,19 @@ def parse_meal_request(text):
         meal_requested = meal
   food = meal_data[indices[day_requested]]
   if meal_requested == "brunch":
-    return food
+    if weekday:
+      return "there is no brunch on weekdays!"
+    brunch = to_food_list(food["breakfast"])
+    brunch.extend(to_food_list(food["lunch"]))
+    return brunch
   else:
-    return food[meal_requested]
+    return to_food_list(food[meal_requested])
+
+def humanize_food_list(food_list):
+  food_list = map(lambda x: str(x),food_list)
+  humanized = ", ".join(food_list)
+  return humanized
+
 
 if __name__ == '__main__':
-	print parse_meal_request("what is for breakfast on friday")
+	print humanize_food_list(parse_meal_request("what is for brunch on sunday"))
