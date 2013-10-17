@@ -285,7 +285,7 @@ def today_is():
 def tomorrow_is():
   days = {0:"monday",1:"tuesday",2:"wednesday",3:"thursday", 4:"friday", 5:"saturday", 6:"sunday"}
   eastern = timezone("US/Eastern")
-  now = (datetime.datetime.today().replace(tzinfo=eastern).weekday()+1) % 7
+  now = (datetime.datetime.today().replace(tzinfo=eastern).weekday() + 1) % 7
   return days[now]
 
 def parse_meal_request(text):
@@ -305,7 +305,7 @@ def parse_meal_request(text):
 
   #is it a weekday? -> what day -> what meal?
   #is it the weekend? -> which day? -> brunch or dinner?
-  if "today" in text or "tomorrow" in text: 
+  if "today" in text or "tonight" in text: 
   	day_requested = today_is()
   elif "tomorrow" in text:
   	day_requested = tomorrow_is()
@@ -319,6 +319,8 @@ def parse_meal_request(text):
 	      day_requested = "saturday"
 	    else:
 	      day_requested = "sunday"
+  if day_requested is None: # in case they didn't include a day, assume it's today
+  	day_requested = today_is()
   if day_requested == "saturday" or day_requested == "sunday":
   	weekday = False
   else:
@@ -344,6 +346,7 @@ def parse_meal_request(text):
 
 def humanize_food_list(food_list):
   food_list = map(lambda x: str(x),food_list)
+  food_list.sort()
   humanized = ", ".join(food_list)
   return humanized
 
