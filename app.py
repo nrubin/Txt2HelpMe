@@ -172,8 +172,6 @@ def meals():
 	sent_message = request.values.get('Body',None)
 	print "message received from %s" % sender_number
 	try:
-		sender = collection.find_one({"number":sender_number})
-		sender_name = sender["name"]
 		message = get_human_food(sent_message)
 	except Exception as e:
 		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
@@ -307,7 +305,7 @@ def parse_meal_request(text):
 
   #is it a weekday? -> what day -> what meal?
   #is it the weekend? -> which day? -> brunch or dinner?
-  if "today" in text:
+  if "today" in text or "tomorrow" in text: 
   	day_requested = today_is()
   elif "tomorrow" in text:
   	day_requested = tomorrow_is()
