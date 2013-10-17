@@ -172,8 +172,9 @@ def meals():
 		sender = collection.find_one({"number":sender_number})
 		sender_name = sender["name"]
 		message = get_human_food(text)
-	except:
+	except Exception as e:
 		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
+		print e.strerror
 	resp = twilio.twiml.Response()
 	resp.sms(message)
 	return str(resp)
