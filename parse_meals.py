@@ -772,6 +772,13 @@ def humanize_food_list(food_list):
   humanized = ", ".join(food_list)
   return humanized
 
+def today_is():
+  from pytz import timezone
+  import datetime
+  days = {0:"Monday",1:"Tuesday",2:"Wednesday",3:"Thursday", 4:"Friday", 5:"Saturday", 6:"Sunday"}
+  eastern = timezone("US/Eastern")
+  now = datetime.datetime.today().replace(tzinfo=eastern).weekday()
+  return days[now]
 
 if __name__ == '__main__':
-	print humanize_food_list(parse_meal_request("what is for brunch on sunday"))
+	print today_is()

@@ -14,6 +14,9 @@ from email.mime.text import MIMEText
 
 import smtplib
 
+import datetime
+from pytz import timezone
+
 app=Flask(__name__)
 
 SECRET_KEY = "secret secret"
@@ -275,6 +278,18 @@ def to_food_list(food):
       items.append(meal_dict["name"])
   return items
 
+def today_is():
+  days = {0:"monday",1:"tuesday",2:"wednesday",3:"thursday", 4:"friday", 5:"saturday", 6:"sunday"}
+  eastern = timezone("US/Eastern")
+  now = datetime.datetime.today().replace(tzinfo=eastern).weekday()
+  return days[now]
+
+def tomorrow_is():
+  days = {0:"monday",1:"tuesday",2:"wednesday",3:"thursday", 4:"friday", 5:"saturday", 6:"sunday"}
+  eastern = timezone("US/Eastern")
+  now = (datetime.datetime.today().replace(tzinfo=eastern).weekday()+1) % 7
+  return days[now]
+
 def parse_meal_request(text):
   day_requested = "monday"
   meal_requested = "lunch"
@@ -282,7 +297,6 @@ def parse_meal_request(text):
   meals = ["breakfast","lunch","dinner","brunch"]
   indices = { "monday" : 0, "tuesday" : 1, "wednesday" : 2, "thursday" : 3, "friday" : 4, "saturday": 5, "sunday" : 6 }
   weekday = False
-
   lower_text = text.lower()
   text = lower_text
   r = requests.get("http://olinapps-dining.herokuapp.com/api")  
@@ -293,19 +307,29 @@ def parse_meal_request(text):
 
   #is it a weekday? -> what day -> what meal?
   #is it the weekend? -> which day? -> brunch or dinner?
-  for day in weekdays:
-    if day in text:
-      weekday = True
-      day_requested = day
+  if "today" in text:
+  	day_requested = today_is()
+  elif "tomorrow" in text:
+  	day_requested = tomorrow_is()
+  else:
+	  for day in weekdays:
+	    if day in text:
+	      weekday = True
+	      day_requested = day
+	  if not weekday:
+	    if "saturday" in text:
+	      day_requested = "saturday"
+	    else:
+	      day_requested = "sunday"
+  if day_requested == "saturday" or day_requested == "sunday":
+  	weekday = False
+  else:
+  	weekday = True
   if not weekday:
-    if "saturday" in text:
-      day_requested = "saturday"
-    else:
-      day_requested = "sunday"
-    if "dinner" in text:
-      meal_requested = "dinner"
-    else:
-      meal_requested = "brunch"
+	if "dinner" in text:
+	  meal_requested = "dinner"
+	else:
+	  meal_requested = "brunch"
   else:
     for meal in meals:
       if meal in text:
