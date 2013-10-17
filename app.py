@@ -174,7 +174,7 @@ def meals():
 		message = get_human_food(text)
 	except Exception as e:
 		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
-		print e.strerror
+		raise e
 	resp = twilio.twiml.Response()
 	resp.sms(message)
 	return str(resp)
