@@ -297,7 +297,7 @@ def parse_meal_request(text):
   weekday = False
   lower_text = text.lower()
   text = lower_text
-  r = requests.get("http://olinapps-dining.herokuapp.com/api")  
+  r = requests.get("http://olinapps.com/api/dining/olin")  
   raw_text = r.text
   # raw_text.replace(u"Entrée",u"Entree")
   raw_text.replace(u"Entr\xe9e",u"Entree")
