@@ -171,11 +171,11 @@ def meals():
 	sender_number = request.values.get('From',None)
 	sent_message = request.values.get('Body',None)
 	print "message received from %s" % sender_number
-	try:
-		message = get_human_food(sent_message)
-	except Exception as e:
-		message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
-		raise e
+	# try:
+	message = get_human_food(sent_message)
+	# except Exception as e:
+	# 	message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
+	# 	raise e
 	resp = twilio.twiml.Response()
 	resp.sms(message)
 	return str(resp)
