@@ -6,15 +6,13 @@ import os
 from pymongo import MongoClient
 
 import phonenumbers
-import requests
-import json
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import smtplib
 
-from MealParser import MessageResponseBuilder
+from MealParser import makeMessageResponse
 
 app=Flask(__name__)
 
@@ -171,8 +169,7 @@ def meals():
 	sent_message = request.values.get('Body',None)
 	print "message received from %s" % sender_number
 	# try:
-	MRB = MessageResponseBuilder(sent_message)
-	message = MRB.response
+	message = makeMessageResponse(sent_message)
 	# except Exception as e:
 	# 	message = "I'm sorry, I don't know who you are. Please register at txt2helpme.herokuapp.com"
 	# 	raise e
@@ -263,10 +260,6 @@ def send_email(name,number,message_text):
 	server.sendmail(sender,sender,message.as_string())
 	server.quit()
 
-def get_meals():
-	r = requests.get("http://olinapps-dining.herokuapp.com/api")	
-	data = json.loads(r.text)
-	return data
 
 
 

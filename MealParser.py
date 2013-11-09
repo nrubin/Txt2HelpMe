@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from pytz import timezone
 import json
+import requests
 
 #module to contain parsing code for meal stuff
 
@@ -58,7 +59,9 @@ class MealsParser():
 		self.dishes = self.get_dishes(day_requested,meal_requested,self.meal_json)
 
 	def get_meals_json(self):
-		return json.loads(test_meals.replace(u"Entr\xe9e",u"Entree"))
+		r = requests.get("http://olinapps-dining.herokuapp.com/api")	
+		data = json.loads(r.text)
+		return data
 
 	def meals_in_a_day(self,day,meals_json):
 		index = days_to_vals[day.name]
@@ -114,17 +117,15 @@ class MessageParser():
 				day = option
 		return day
 
-class MessageResponseBuilder():
-	def __init__(self,msg):
-		msgP = MessageParser(msg)
-		m = MealsParser(msgP.day,msgP.meal)
-		dishes = m.dishes
-		if dishes == "meal_not_found":
-			self.response = "Do you want breakfast, lunch, dinner, or brunch? Also, I can't detect typos. Try again!"
-			return None
-		date = msgP.day.date
-		preamble = "Food for %s on %s, %s/%s: " % (msgP.meal,msgP.day.name,date.month,date.day)
-		self.response = preamble + "; ".join(dishes)
+def makeMessageReponse(msg):
+	msgP = MessageParser(msg)
+	m = MealsParser(msgP.day,msgP.meal)
+	dishes = m.dishes
+	if dishes == "meal_not_found":
+		return "Do you want breakfast, lunch, dinner, or brunch? Also, I can't detect typos. Try again!"
+	date = msgP.day.date
+	preamble = "Food for %s on %s, %s/%s: " % (msgP.meal,msgP.day.name,date.month,date.day)
+	return preamble + "; ".join(dishes)
 
 if __name__ == '__main__':
 	a = Day("friday")
@@ -137,7 +138,8 @@ if __name__ == '__main__':
 	# print msgP.meal
 	# m = MealsParser(msgP.day,msgP.meal)
 	# print m.dishes
-	mrb = MessageResponseBuilder(msg)
-	print mrb.response
+	# mrb = MessageResponseBuilder(msg)
+	# print mrb.response
+	print makeMessageReponse(msg)
 
 	# print meals_in_a_day(a)
